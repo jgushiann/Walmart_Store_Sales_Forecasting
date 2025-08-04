@@ -123,6 +123,96 @@ https://dagshub.com/jgushiann/Walmart-Recruiting---Store-Sales-Forecasting.mlflo
 
 <img width="789" height="492" alt="image" src="https://github.com/user-attachments/assets/f0145e85-d281-4c55-bc3b-c5ccc59ee002" />
 
+### XGBoost
+მოდელი დავატრენინგე შემდეგი ჰიპერპარამეტრებით:
+xgb_params = {
+        'n_estimators': 500,
+        'max_depth': 6,
+        'learning_rate': 0.1,
+        'subsample': 0.8,
+        'colsample_bytree': 0.8,
+        'random_state': 42,
+        'n_jobs': -1,
+        'early_stopping_rounds': 50,
+        'eval_metric': 'mae'
+    }
+მოდელი ტრენინგდა იმავე 80%-იან dataზე,overfitting-ის თავიდან ასაცილებლად
+
+შედეგები: 
+- XGBoost (Train) Metrics:
+  - MAE: 1859.0164
+  - MSE: 9748211.0595
+  - RMSE: 3122.2125
+  - R2: 0.9752
+  - MAPE: 2419.1423
+  - WMAE: 1859.0164
+- XGBoost (Val) Metrics:
+  - MAE: 2290.7544
+  - MSE: 14200514.7450
+  - RMSE: 3768.3570
+  - R2: 0.9559
+  - MAPE: 7993.1636
+  - WMAE: 2290.7544
+ 
+  https://dagshub.com/jgushiann/Walmart-Recruiting---Store-Sales-Forecasting.mlflow/#/experiments/3/runs/fd3eda7176954ba881ba2f2f41b2babf
+
+  https://dagshub.com/jgushiann/Walmart-Recruiting---Store-Sales-Forecasting.mlflow/#/experiments/3
+
+  <img width="787" height="491" alt="image" src="https://github.com/user-attachments/assets/d4811982-b433-4f73-bd82-6ff79e10e93e" />
+
+
+მოდელების შესადარებლად გამოვიყენოთ შემდეგი გრაფიკები:
+
+<img width="1188" height="592" alt="image" src="https://github.com/user-attachments/assets/a0988d95-5a8b-4eed-98a4-b3d6d65c0598" />
+
+<img width="1395" height="595" alt="image" src="https://github.com/user-attachments/assets/e2499faa-fa58-4c97-bdba-1253fd6da327" />
+
+<img width="1062" height="73" alt="image" src="https://github.com/user-attachments/assets/58dd2c67-7e64-4ddc-ba4d-b9ab6e63cc86" />
+
+<img width="1040" height="72" alt="image" src="https://github.com/user-attachments/assets/6cc7bd3a-43c6-4551-9959-dbf633d6e1fe" />
+
+
+### SARIMA
+გამოვიყენეთ SARIMA მოდელი Walmart-ის გაყიდვების (Weekly Sales) პროგნოზირებისთვის, როგორც time series ანალიზის მეთოდი, რომელიც ითვალისწინებს სეზონურობას. 
+
+SARIMAX მოდელი გამოიყen ARIMA-ს 'გაუმჯობესებული' ვერსია, რომელიც ითვალისწინებს სეზონურ კომპონენტებს და გარე ცვლადებს, როგორიცაა Temperature, CPI, Unemployment და MarkDown-ები. მოდელის პარამეტრები (p, d, q) და სეზონური პარამეტრები (P, D, Q, m) ავტომატურად განისაზღვრა pmdarima.auto_arima-ს მეშვეობით, სადაც ( m = 52 ) (წლიური სეზონურობა, რადგან მონაცემები კვირეულია).
+
+პარამეტრების ავტომატური შერჩევა-  ყოველი მაღაზიისთვის გამოვიყენეთ auto_arima, რათა მიეღწა ოპტიმალური (p, d, q) და (P, D, Q, m) პარამეტრები. ( max_p = 2 ), ( max_q = 2 ), ( max_P = 1 ), ( max_Q = 1 ) და ( m = 52 ) განისაზღვრა სეზონური პერიოდის საფუძველზე. 
+
+<img width="979" height="447" alt="image" src="https://github.com/user-attachments/assets/f2eaa4c6-dba3-464a-a9a6-bbd94ad29fa4" />
+
+
+### DLinear
+DLinear  არის deep learning-ის ერთ-ერთი მოდელი,რომელიც დაფუძნებულია time series ანალიზზე. მოდელი ითვალისწინებს სეზონურ და 'ტრენდულ' (ტენდენციური კომპონენტები) კომპონენტებს, ასევე გარე ფაქტორებს. ყველა ექსპერიმენტი დაფიქსირდა MLflow-ით Dagshub-ის რეპოზიტორიაში
+
+https://dagshub.com/jgushiann/Walmart-Recruiting---Store-Sales-Forecasting.mlflow/#/experiments/0/runs/7b23c5e4c9eb43c08c724cf4f448cc9e
+
+https://dagshub.com/jgushiann/Walmart-Recruiting---Store-Sales-Forecasting.mlflow/#/experiments/0
+
+პარამეტრები:
+- SEQ_LEN = 4
+- PRED_LEN = 2
+- BATCH_SIZE = 64
+- EPOCHS = 50
+- LEARNING_RATE = 0.001
+- PATIENCE = 10
+- TEST_SIZE = 0.1
+- VAL_SIZE = 0.05
+
+თავიდან, train.csv, stores.csv და features.csv გააერთიანდა train_full-ში, ხოლო test.csv - test_full-ში, left join-ის გამოყenებით.
+მერჯის შემდეგ წარმოიქმნა ორი იდენტური სვეტი IsHoliday_x და IsHoliday_y, რომელიც გავაერთიანე ერთ ცალკე სვეტად(IsHoliday).
+განსხვავებით linar/random forest/xgboost მოდელებისგან, აქ არ წაგვიშლია უარყოფითი Weekly_Sales-ის მნიშვნელობები, თუმცა გავფილტრეთ IQR მეთოდით.
+
+შედეგები:
+- MAE: 2430.1650
+  - RMSE: 4001.7834
+  - MAPE: 10758.0645
+  - R2: 0.9666
+
+ <img width="1725" height="522" alt="image" src="https://github.com/user-attachments/assets/a664f6a1-407f-4866-841a-044b04584968" />
+
+ <img width="1719" height="387" alt="image" src="https://github.com/user-attachments/assets/8ef0ef03-d09f-402c-8ea8-48e88003ac11" />
+
 
 
 
